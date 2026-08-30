@@ -4,11 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>도움말 - 계시록 새노래 듣기</title>
-<link rel="stylesheet" href="css/style.css?v=20260830v">
+<link rel="stylesheet" href="css/style.css?v=20260830z">
 <style>
   main{ max-width:640px; }
   .help-section{ margin-bottom:18px; }
-  .help-section h2{ font-size:1rem; margin:0 0 6px; color:var(--sky-strong); }
+  .help-section h2{ font-size:1rem; margin:0 0 6px; color:var(--sky-strong); display:flex; align-items:center; gap:8px; }
+  .help-section h2::before{
+    content:"";
+    display:inline-block;
+    width:10px; height:10px;
+    background:var(--sky);
+    border-radius:3px;
+    flex-shrink:0;
+  }
   .help-section p{ margin:0; color:var(--ink); font-size:0.9375rem; line-height:1.7; }
   .help-footer{
     margin-top:28px; padding-top:16px; border-top:1px solid var(--line);
@@ -44,8 +52,18 @@
   </div>
 
   <div class="help-section">
-    <h2>절 시작 지점 고치기</h2>
-    <p>절이 시작되는 지점이 마음에 안 들면 직접 다시 표시해서 고칠 수 있어요.</p>
+    <h2>절 시작·끝 지점 고치기</h2>
+    <p>위쪽 ⚙(톱니바퀴) 버튼을 누르면 "절 구간 표시"와 "초기화" 버튼이 나타나요. "절 구간 표시"를 누르면 각 절이 시작되고 끝나는 지점을 원하는 대로 다시 표시할 수 있어요. "초기화"는 지금 보고 있는 장의 표시만 지워요 (다른 장은 그대로 남아있어요). 다시 누르면 이 버튼들은 숨겨져요.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>홈 화면에 추가하기</h2>
+    <p><strong>아이폰(사파리)</strong><br>
+    화면 아래쪽 공유 버튼(네모에 위쪽 화살표) 누르기 → 아래로 스크롤해서 "홈 화면에 추가" 누르기 → 오른쪽 위 "추가" 누르기</p>
+    <p style="margin-top:10px;"><strong>갤럭시 등 안드로이드(크롬)</strong><br>
+    오른쪽 위 점 3개(⋮) 누르기 → "홈 화면에 추가" 또는 "앱 설치" 누르기 → "추가"/"설치" 누르기</p>
+    <p style="margin-top:10px;"><strong>갤럭시 등 안드로이드(삼성 인터넷)</strong><br>
+    오른쪽 아래 탭 버튼(가로줄 3개) 누르기 → "현재 페이지 추가" 누르기 → "홈 화면" 선택</p>
   </div>
 
   <div class="help-footer">
