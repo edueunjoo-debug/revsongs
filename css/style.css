@@ -1,0 +1,357 @@
+:root{
+  --bg:#f4f5f6;
+  --panel:#ffffff;
+  --neutral-bg:#fafafa;
+  --neutral-text:#3a3a42;
+  --ink:#3a3a42;
+  --ink-soft:#8b8b93;
+  --line:#e3e5e9;
+  --line-strong:#d3d6dc;
+  --primary-bg:#3f3e46;
+  --primary-bg-hover:#2f2e35;
+
+  --accent:#e0c73e;
+  --accent-bg:#fef9df;
+  --accent-strong:#8a7415;
+
+  --good:#3fa066;
+  --good-bg:#eaf7eb;
+  --bad:#e0708f;
+  --bad-bg:#ffe3e8;
+  --sky:#3f83b3;
+  --sky-bg:#e8f5ff;
+  --sky-bg-hover:#d5edfb;
+  --sky-strong:#1f5c82;
+  --peach:#b98a26;
+  --peach-bg:#fff9e1;
+
+  --radius:16px;
+  --shadow:0 1px 4px rgba(30,30,40,0.05);
+  font-size:16px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;
+  line-height:1.6;
+  padding-bottom:60px;
+}
+header.top{
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  padding:16px 20px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  max-width:760px;
+  margin:0 auto;
+}
+header.top h1{
+  margin:0;
+  font-size:1.25rem;
+  letter-spacing:-0.02em;
+  color:var(--ink);
+  font-weight:800;
+  white-space:nowrap;
+}
+main{
+  max-width:760px;
+  margin:0 auto;
+  padding:20px 16px 60px 16px;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+.card h2{ margin:0 0 12px 0; font-size:0.9375rem; color:var(--ink); }
+
+.chapter-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(46px, 1fr));
+  gap:8px;
+}
+.chapter-tile{
+  appearance:none;
+  border:1.5px solid var(--line);
+  background:var(--neutral-bg);
+  color:var(--ink);
+  font-weight:700;
+  font-size:0.9375rem;
+  padding:10px 0;
+  border-radius:12px;
+  cursor:pointer;
+  transition:background .12s ease, border-color .12s ease, color .12s ease, transform .08s ease;
+}
+.chapter-tile:hover{ background:#f0f0f2; border-color:var(--line-strong); }
+.chapter-tile:active{ transform:translateY(1px); }
+.chapter-tile.active{
+  background:var(--good-bg);
+  border-color:var(--good);
+  color:var(--good);
+}
+
+.player-head{
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  margin-bottom:4px;
+}
+.chapter-label{ font-weight:800; font-size:1.15rem; color:var(--sky); min-width:60px; text-align:center; }
+.chapter-title-row{
+  text-align:center; font-weight:700; font-size:0.9375rem; color:var(--ink);
+  margin-top:0; margin-bottom:8px; padding:0 8px;
+}
+
+.btn-tool.on{ background:var(--sky); border-color:var(--sky); color:#fff; }
+
+.guided-panel{
+  margin:0 0 18px 0; padding:12px 14px;
+  background:var(--sky-bg); border:1.5px solid var(--sky);
+  border-radius:12px;
+  /* floats right under the player card while marking verses, so it stays
+     visible even while scrolling down through the verse list - top gets
+     kept in sync with the player card's actual height by JS (its height
+     isn't fixed: loop status/hints can appear, chapter titles wrap, etc). */
+  position:sticky;
+  top:70px;
+  z-index:9;
+}
+.guided-panel .small-note{ color:var(--sky-strong); font-weight:600; }
+#guidedMarkBtn{ font-size:0.9375rem; padding:11px 18px; }
+
+.player-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px 16px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+  /* floating (pinned) again - needed to see the current verse's controls
+     (🎯절 구간 표시하기 etc.) while scrolling through verse text. It's
+     kept short so it doesn't crowd out the verses below: only the
+     controls used WHILE listening/marking live here (chapter nav, audio,
+     seek/speed, 전체듣기/절구간표시하기/표시초기화). The occasional-use
+     controls (이 장 곡 바꾸기, 내보내기, 가져오기) moved to a plain
+     (non-floating) card at the very bottom of the page instead. */
+  position:sticky;
+  top:70px;
+  z-index:10;
+}
+.footer-card h2{ margin-bottom:10px; }
+.loop-status{
+  margin-top:8px; padding:8px 12px;
+  background:var(--sky-bg); border:1.5px solid var(--sky);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+/* .loop-status sets its own `display`, which (being an author-stylesheet
+   rule) otherwise overrides the browser's default `[hidden]{display:none}`
+   at equal specificity - without this it would stay visible-but-empty even
+   while its `hidden` attribute is set. */
+.loop-status[hidden]{ display:none; }
+.loop-status span{ color:var(--sky-strong); font-weight:600; font-size:0.8125rem; }
+#chapterAudioStatus{ color:var(--sky-strong); font-weight:600; }
+#mainAudio{ display:none; }
+.custom-player{
+  display:flex; align-items:center; gap:10px;
+}
+.play-toggle{
+  appearance:none; border:none; cursor:pointer;
+  width:48px; height:48px; min-width:48px; border-radius:50%;
+  background:var(--sky); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(63,131,179,0.35);
+  transition:transform .08s ease, background .12s ease;
+}
+.play-toggle:hover{ background:var(--sky-strong); }
+.play-toggle:active{ transform:scale(0.94); }
+.progress-wrap{ flex:1; min-width:0; }
+.seek-range{
+  -webkit-appearance:none; appearance:none;
+  width:100%; height:6px; border-radius:3px;
+  background:var(--line-strong); outline:none; cursor:pointer;
+  margin:0;
+}
+.seek-range::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--sky); border:2.5px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.25);
+  cursor:pointer; margin-top:-7px;
+}
+.seek-range::-moz-range-thumb{
+  width:20px; height:20px; border-radius:50%;
+  background:var(--sky); border:2.5px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.25); cursor:pointer;
+}
+.seek-range::-webkit-slider-runnable-track{ height:6px; border-radius:3px; background:var(--line-strong); }
+.seek-range::-moz-range-track{ height:6px; border-radius:3px; background:var(--line-strong); }
+.time-row{
+  display:flex; justify-content:space-between;
+  font-size:0.6875rem; color:var(--ink-soft);
+  font-variant-numeric:tabular-nums; margin-top:2px;
+}
+.control-row{
+  margin-top:8px;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+.control-row .speed-ctrl{ display:flex; align-items:center; gap:4px; }
+.control-row #speedSlider{ width:56px; }
+.control-row #speedLabel{ min-width:30px; text-align:right; font-variant-numeric:tabular-nums; }
+.player-sub{ display:flex; align-items:center; gap:10px; }
+.player-sub:empty{ display:none; }
+#missingMsg{ margin-top:6px; }
+.btn.small.btn-tool{
+  flex:1 1 90px;
+  min-width:0;
+  background:var(--sky-bg);
+  border:1.5px solid var(--sky);
+  color:var(--sky-strong);
+  box-shadow:none;
+  padding:10px 6px;
+  font-size:0.84375rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-align:center;
+}
+.btn.small.btn-tool:hover{ background:var(--sky-bg-hover); }
+.footer-card .btn.small.btn-tool{ flex:0 0 auto; padding:8px 16px; }
+#adminToggleBtn{ flex:0 0 auto; font-size:1rem; padding:8px 10px; }
+#adminToggleBtn.on{ background:var(--sky-bg); border-color:var(--sky); color:var(--sky-strong); }
+.hint{ margin:8px 0 0 0; font-size:0.8125rem; color:var(--sky-strong); background:var(--sky-bg); padding:8px 10px; border-radius:10px; }
+
+button.btn, label.btn{
+  appearance:none;
+  font-family:inherit;
+  border:1.5px solid var(--line);
+  background:var(--neutral-bg);
+  color:var(--neutral-text);
+  padding:9px 14px;
+  border-radius:12px;
+  font-size:0.84375rem;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:background .12s ease, border-color .12s ease, transform .08s ease;
+}
+button.btn:hover, label.btn:hover{ background:#f0f0f2; border-color:var(--line-strong); }
+button.btn:active, label.btn:active{ transform:translateY(1px); }
+button.btn.ghost, label.btn.ghost{
+  background:transparent;
+  border:1.5px solid var(--line);
+  color:var(--ink-soft);
+  box-shadow:none;
+}
+button.btn.ghost:hover, label.btn.ghost:hover{ background:#f2f2f4; }
+button.btn.small, label.btn.small{ padding:6px 11px; font-size:0.78125rem; border-radius:9px; box-shadow:none; }
+button.btn:disabled{ opacity:0.4; cursor:not-allowed; }
+.row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+/* Same issue as .loop-status below: an author rule that sets `display`
+   on an element beats the browser's own default `[hidden]{display:none}`
+   even though `.row` doesn't look related to visibility - any element
+   with class="row" that also gets a `hidden` attribute (adminControlsRow,
+   etc.) would otherwise stay visibly flexed regardless of the attribute. */
+.row[hidden]{ display:none; }
+
+.small-note{ font-size:0.78125rem; color:var(--ink-soft); }
+.missing-audio{
+  font-size:0.78125rem; color:var(--bad); background:var(--bad-bg);
+  padding:4px 10px; border-radius:20px;
+}
+
+/* ---- verse list / karaoke ---- */
+.verse-list{ display:flex; flex-direction:column; gap:2px; }
+.verse-row{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+  transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.verse-row + .verse-row{ margin-top:8px; }
+.verse-row.current{
+  background:var(--sky-bg);
+  border-color:var(--sky);
+  transform:scale(1.015);
+}
+.verse-row.marked{ border-left:4px solid var(--sky); }
+.verse-row.marked.complete{ border-left:4px solid var(--good); }
+.verse-row.current.marked{ border-left:4px solid var(--sky-strong); }
+.vr-main{ display:flex; align-items:flex-start; gap:10px; }
+.vnum{
+  color:var(--ink-soft);
+  background:var(--neutral-bg);
+  border:1px solid var(--line);
+  font-weight:700;
+  font-size:0.75rem;
+  min-width:24px;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.verse-row.current .vnum{ background:var(--sky-strong); border-color:var(--sky-strong); color:#fff; }
+.vtext{ flex:1; font-size:1rem; transition:font-size .15s ease, font-weight .15s ease; }
+.verse-row.current .vtext{ font-size:1.09375rem; font-weight:700; color:var(--sky-strong); }
+.vctrl{ display:flex; gap:4px; flex-shrink:0; }
+.vctrl button{
+  border:1.5px solid var(--line);
+  background:var(--neutral-bg);
+  color:var(--ink-soft);
+  width:30px; height:30px;
+  border-radius:9px;
+  font-size:0.875rem;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+  box-shadow:none;
+}
+.vctrl button:hover{ background:#f0f0f2; }
+.vctrl button.on{ background:var(--good-bg); border-color:var(--good); color:var(--good); }
+.vctrl button.armed{ background:var(--sky-bg); border-color:var(--sky); color:var(--sky-strong); }
+.vctrl button .badge{
+  position:absolute; top:-6px; right:-6px;
+  background:var(--sky-strong); color:#fff;
+  font-size:0.625rem; font-weight:800;
+  min-width:15px; height:15px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+.vtime{ font-size:0.6875rem; color:var(--ink-soft); margin-top:2px; font-variant-numeric:tabular-nums; }
+
+.alt-panel{
+  margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);
+}
+.alt-clip-row{
+  display:flex; align-items:center; gap:8px;
+  padding:6px 0; font-size:0.84375rem;
+}
+.alt-clip-row .label{ flex:1; color:var(--ink); }
+.alt-clip-row audio{ height:32px; max-width:190px; }
+.alt-clip-row .del{
+  border:none; background:transparent; color:var(--bad); cursor:pointer; font-size:0.9375rem; padding:2px 6px;
+}
+.alt-add-row{ display:flex; align-items:center; gap:8px; margin-top:6px; }
+.alt-add-row input[type=text]{
+  flex:1; font-family:inherit; font-size:0.84375rem; padding:7px 10px;
+  border:1.5px solid var(--line); border-radius:9px; background:#fff; color:var(--ink);
+}
+
+.empty-alt{ font-size:0.8125rem; color:var(--ink-soft); }
