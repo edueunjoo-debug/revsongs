@@ -232,6 +232,27 @@ main{
 .footer-card .btn.small.btn-tool{ flex:0 0 auto; padding:8px 16px; }
 #adminToggleBtn{ flex:0 0 auto; font-size:1rem; padding:8px 10px; }
 #adminToggleBtn.on{ background:var(--sky-bg); border-color:var(--sky); color:var(--sky-strong); }
+/* #helpBtn is an <a>, not a <button>/<label> - the shared button rules
+   below only target those two tags, so it needs its own copy of the
+   ghost/small look plus a reset for normal link styling (underline,
+   visited-color, etc). */
+#helpBtn{
+  flex:0 0 auto;
+  display:inline-flex; align-items:center; justify-content:center;
+  appearance:none;
+  border:1.5px solid var(--line);
+  background:transparent;
+  color:var(--ink-soft);
+  text-decoration:none;
+  padding:6px 11px;
+  border-radius:9px;
+  font-size:0.9375rem;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:none;
+}
+#helpBtn:visited{ color:var(--ink-soft); }
+#helpBtn:hover{ background:#f2f2f4; }
 .hint{ margin:8px 0 0 0; font-size:0.8125rem; color:var(--sky-strong); background:var(--sky-bg); padding:8px 10px; border-radius:10px; }
 
 button.btn, label.btn{

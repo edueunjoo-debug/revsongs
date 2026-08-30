@@ -1,6 +1,6 @@
 {
-  "name": "계시록 노래",
-  "short_name": "계시록 노래",
+  "name": "계시록 새노래 듣기",
+  "short_name": "새노래 듣기",
   "description": "요한계시록 22장 노래를 절과 함께 따라 듣는 앱",
   "start_url": "./index.html",
   "scope": "./",
