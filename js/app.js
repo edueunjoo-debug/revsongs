@@ -47,6 +47,12 @@ function chapterDisplayLabel(ch){
 function chapterTileLabel(ch){
   return Number(ch)===TITLE_TRACK_CH ? "제목" : String(ch);
 }
+/* labels shown in bold before each line of the title track - index-matched
+   to REV_DATA["23"] (1장 is split into two lines, so 23 labels total) */
+const TITLE_TRACK_LABELS = [
+  "1-1장","1-2장","2장","3장","4장","5장","6장","7장","8장","9장","10장",
+  "11장","12장","13장","14장","15장","16장","17장","18장","19장","20장","21장","22장"
+];
 
 function qs(sel, root){ return (root||document).querySelector(sel); }
 function qsa(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
@@ -656,7 +662,9 @@ function buildVerseRow(i, entry){
   main.appendChild(el("div",{class:"vnum"}, String(verseNum)));
 
   const textCol = el("div",{style:"flex:1;"});
-  const textWrap = el("div",{class:"vtext"}, verseText(currentChapter,i));
+  const textWrap = (Number(currentChapter)===TITLE_TRACK_CH && TITLE_TRACK_LABELS[i])
+    ? el("div",{class:"vtext"}, [el("b",{class:"title-track-label"}, TITLE_TRACK_LABELS[i]+" "), verseText(currentChapter,i)])
+    : el("div",{class:"vtext"}, verseText(currentChapter,i));
   textCol.appendChild(textWrap);
   textCol.appendChild(el("div",{class:"vtime"}, fmtRange(entry)));
   main.appendChild(textCol);
