@@ -331,7 +331,11 @@ button.btn:disabled{ opacity:0.4; cursor:not-allowed; }
 .verse-row.current .vnum{ background:var(--sky-strong); border-color:var(--sky-strong); color:#fff; }
 .vtext{ flex:1; font-size:1rem; transition:font-size .15s ease, font-weight .15s ease; }
 .verse-row.current .vtext{ font-size:1.09375rem; font-weight:700; color:var(--sky-strong); }
-.vctrl{ display:flex; gap:4px; flex-shrink:0; }
+body.font-large .vtext{ font-size:1.375rem; }
+body.font-large .verse-row.current .vtext{ font-size:1.5rem; }
+.font-size-ctrl{ display:flex; gap:4px; margin-left:4px; }
+.font-size-btn.on{ background:var(--sky-bg); border-color:var(--sky); color:var(--sky-strong); }
+.vctrl{ display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
 .vctrl button{
   border:1.5px solid var(--line);
   background:var(--neutral-bg);
