@@ -330,6 +330,7 @@ button.btn:disabled{ opacity:0.4; cursor:not-allowed; }
 }
 .verse-row.current .vnum{ background:var(--sky-strong); border-color:var(--sky-strong); color:#fff; }
 .vtext{ flex:1; font-size:1rem; transition:font-size .15s ease, font-weight .15s ease; }
+.title-track-label{ color:var(--sky-strong); }
 .verse-row.current .vtext{ font-size:1.09375rem; font-weight:700; color:var(--sky-strong); }
 body.font-large .vtext{ font-size:1.375rem; }
 body.font-large .verse-row.current .vtext{ font-size:1.5rem; }
