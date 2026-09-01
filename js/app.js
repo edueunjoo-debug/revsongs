@@ -30,9 +30,23 @@ const CHAPTER_TITLES = {
   19: "영육 어린양의 혼인잔치",
   20: "순교의 영과 산 자의 첫째 부활",
   21: "약속한 새 하늘 새 땅 신천지",
-  22: "생명나무가 있는 거룩한 성"
+  22: "생명나무가 있는 거룩한 성",
+  23: "각 장 제목 모음"
 };
 function chapterTitle(ch){ return CHAPTER_TITLES[ch] || ""; }
+
+/* Chapter 23 is a special "title track" - a song of just the 22 chapter
+   titles read out (1장 is split into two, giving 23 lines total) rather
+   than an actual chapter of Revelation. It shows as "제목" everywhere a
+   chapter number would normally appear (grid tile, "N장" label) instead
+   of "23"/"23장". */
+const TITLE_TRACK_CH = 23;
+function chapterDisplayLabel(ch){
+  return Number(ch)===TITLE_TRACK_CH ? "제목" : ch+"장";
+}
+function chapterTileLabel(ch){
+  return Number(ch)===TITLE_TRACK_CH ? "제목" : String(ch);
+}
 
 function qs(sel, root){ return (root||document).querySelector(sel); }
 function qsa(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
@@ -229,6 +243,25 @@ const missingMsg = qs("#missingMsg");
 const markCountEl = qs("#markCount");
 const verseListEl = qs("#verseList");
 const playAllHint = qs("#playAllHint");
+
+/* ---------------- 글꼴 크기(가/가) ---------------- */
+const LS_FONT_SIZE = "revsongs_font_size_v1";
+const fontSmallBtn = qs("#fontSmallBtn");
+const fontLargeBtn = qs("#fontLargeBtn");
+function applyFontSize(size){
+  document.body.classList.toggle("font-large", size==="large");
+  fontSmallBtn.classList.toggle("on", size!=="large");
+  fontLargeBtn.classList.toggle("on", size==="large");
+}
+fontSmallBtn.addEventListener("click", ()=>{
+  localStorage.setItem(LS_FONT_SIZE, "normal");
+  applyFontSize("normal");
+});
+fontLargeBtn.addEventListener("click", ()=>{
+  localStorage.setItem(LS_FONT_SIZE, "large");
+  applyFontSize("large");
+});
+applyFontSize(localStorage.getItem(LS_FONT_SIZE) === "large" ? "large" : "normal");
 const chapterAudioInput = qs("#chapterAudioInput");
 const chapterAudioStatus = qs("#chapterAudioStatus");
 const chapterAudioRevertBtn = qs("#chapterAudioRevertBtn");
@@ -421,7 +454,7 @@ chapterAudioRevertBtn.addEventListener("click", async ()=>{
 function buildChapterGrid(){
   chapterGrid.innerHTML = "";
   CHAPTERS.forEach(ch=>{
-    const tile = el("button",{class:"chapter-tile", "data-ch":ch, title:ch+"장 "+chapterTitle(ch)}, String(ch));
+    const tile = el("button",{class:"chapter-tile", "data-ch":ch, title:chapterDisplayLabel(ch)+" "+chapterTitle(ch)}, chapterTileLabel(ch));
     tile.addEventListener("click", ()=> setChapter(ch));
     chapterGrid.appendChild(tile);
   });
@@ -438,7 +471,7 @@ async function setChapter(ch, opts){
   const autoplay = !!(opts && opts.autoplay);
   currentChapter = ch;
   updateChapterGridActive();
-  chapterLabel.textContent = ch+"장";
+  chapterLabel.textContent = chapterDisplayLabel(ch);
   chapterTitleRow.textContent = chapterTitle(ch);
   missingMsg.hidden = true;
   guidedMode = false;
@@ -649,7 +682,6 @@ function buildVerseRow(i, entry){
     updateMarkCount();
     resyncGuidedIfOpen();
   });
-  ctrl.appendChild(markBtn);
 
   const inLoop = loopActive && loopQueue.includes(i);
   const playBtn = el("button",{
@@ -658,7 +690,6 @@ function buildVerseRow(i, entry){
     class: inLoop ? "on" : ""
   }, inLoop ? "🔁" : "▶");
   playBtn.addEventListener("click", ()=>handleVersePlayTap(i));
-  ctrl.appendChild(playBtn);
 
   const altClips = chapterAltClips.filter(c=>c.verse===verseNum);
   const altBtn = el("button",{title:"이 절 대체곡 관리", class: altClips.length? "on":""}, "🎵");
@@ -667,6 +698,10 @@ function buildVerseRow(i, entry){
     openAltPanelVerse = (openAltPanelVerse===verseNum) ? null : verseNum;
     renderVerseList();
   });
+
+  // 순서: 재생, 시간지정, 다른 노래 교체 - 세로로 배치 (CSS)
+  ctrl.appendChild(playBtn);
+  ctrl.appendChild(markBtn);
   ctrl.appendChild(altBtn);
 
   main.appendChild(ctrl);
