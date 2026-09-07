@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="새노래 듣기">
 <meta name="theme-color" content="#f4f5f6">
-<link rel="stylesheet" href="css/style.css?v=20260830z5">
+<link rel="stylesheet" href="css/style.css?v=20260830z6">
 </head>
 <body>
 
@@ -22,9 +23,46 @@
 
 <main>
 
-  <div class="card chapter-card">
+  <div class="row mode-tabs">
+    <button class="btn small mode-tab on" id="tabRevBtn" data-mode="rev">계시록</button>
+    <button class="btn small mode-tab" id="tabCustomBtn" data-mode="custom">기타</button>
+  </div>
+
+  <div class="card chapter-card" id="chapterCard">
     <h2>장 선택</h2>
     <div id="chapterGrid" class="chapter-grid"></div>
+  </div>
+
+  <div class="card" id="customListSection" hidden>
+    <h2>기타 곡 목록</h2>
+    <button class="btn small btn-tool" id="addCustomSongBtn" style="margin-bottom:12px;">+ 새 곡 추가</button>
+    <div id="customSongListEl"></div>
+  </div>
+
+  <div class="card" id="customAddForm" hidden>
+    <h2>새 곡 추가</h2>
+    <div class="field-group">
+      <label for="customTitleInput" class="small-note">제목</label>
+      <input type="text" id="customTitleInput" class="text-input" placeholder="예: 은혜의 강">
+    </div>
+    <div class="field-group">
+      <label for="customLyricsInput" class="small-note">가사 (한 줄 = 한 절로 나뉘어요)</label>
+      <textarea id="customLyricsInput" class="text-input" rows="8" placeholder="가사를 한 줄씩 붙여넣어 주세요"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="small-note">노래 파일</label>
+      <input type="file" id="customAudioInput" accept="*/*">
+    </div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn small btn-tool" id="customSaveBtn">등록</button>
+      <button class="btn ghost small" id="customCancelBtn">취소</button>
+    </div>
+  </div>
+
+  <div class="row" id="customPlayerBar" hidden>
+    <button class="btn ghost small" id="customBackBtn">← 목록으로</button>
+    <button class="btn ghost small" id="customExportBtn">내보내기</button>
+    <button class="btn ghost small" id="customDeleteBtn">삭제</button>
   </div>
 
   <div class="player-card" id="playerCard">
@@ -95,8 +133,8 @@
 
   <div id="verseList" class="verse-list"></div>
 
-  <div class="card footer-card">
-    <h2>기타</h2>
+  <div class="card footer-card" id="footerCard">
+    <h2>이 장 관리</h2>
     <div class="row">
       <label class="btn ghost small" style="cursor:pointer;">이 장 곡 바꾸기
         <input type="file" id="chapterAudioInput" accept="*/*" hidden>
@@ -114,8 +152,8 @@
 
 </main>
 
-<script src="js/data.js?v=20260830z5"></script>
-<script src="js/verse-times.js?v=20260830z5"></script>
-<script src="js/app.js?v=20260830z5"></script>
+<script src="js/data.js?v=20260830z6"></script>
+<script src="js/verse-times.js?v=20260830z6"></script>
+<script src="js/app.js?v=20260830z6"></script>
 </body>
 </html>
