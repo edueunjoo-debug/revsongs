@@ -149,6 +149,57 @@ main{
   z-index:10;
 }
 .footer-card h2{ margin-bottom:10px; }
+.mode-tabs{ margin-bottom:14px; gap:8px; }
+.mode-tab{
+  flex:1 1 0;
+  background:var(--neutral-bg);
+  border:1.5px solid var(--line);
+  color:var(--ink-soft);
+}
+.mode-tab.on{ background:var(--sky); border-color:var(--sky); color:#fff; }
+.field-group{ margin-bottom:14px; }
+.field-group label{ display:block; margin-bottom:6px; }
+.text-input{
+  width:100%;
+  box-sizing:border-box;
+  border:1.5px solid var(--line);
+  border-radius:10px;
+  padding:9px 12px;
+  font-size:0.9375rem;
+  font-family:inherit;
+  color:var(--ink);
+  background:var(--panel);
+}
+textarea.text-input{ resize:vertical; line-height:1.6; }
+.custom-song-row{
+  display:block;
+  width:100%;
+  text-align:left;
+  border:1.5px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  background:var(--panel);
+  cursor:pointer;
+  appearance:none;
+  font-family:inherit;
+}
+.custom-song-row:hover{ background:#f6f7f8; }
+.custom-song-row-wrap{ display:flex; align-items:stretch; gap:8px; margin-bottom:8px; }
+.custom-song-row-wrap .custom-song-row{ flex:1; min-width:0; }
+.custom-song-delete{
+  flex:0 0 auto;
+  appearance:none;
+  border:1.5px solid var(--line);
+  background:var(--panel);
+  color:var(--ink-soft);
+  border-radius:12px;
+  width:44px;
+  font-size:1rem;
+  cursor:pointer;
+}
+.custom-song-delete:hover{ background:var(--bad-bg); border-color:var(--bad); color:var(--bad); }
+.custom-song-title{ font-weight:700; font-size:0.9375rem; margin-bottom:2px; }
+#customPlayerBar{ margin-bottom:10px; }
 .loop-status{
   margin-top:8px; padding:8px 12px;
   background:var(--sky-bg); border:1.5px solid var(--sky);
