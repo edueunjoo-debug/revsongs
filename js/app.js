@@ -3,8 +3,16 @@
 "use strict";
 
 const CHAPTERS = Object.keys(REV_DATA).map(Number).sort((a,b)=>a-b);
-function verseCount(ch){ return REV_DATA[String(ch)].length; }
-function verseText(ch,i){ return REV_DATA[String(ch)][i]; }
+let customSongsCache = {};
+function isCustomId(ch){ return typeof ch==="string" && ch.charAt(0)==="c"; }
+function verseCount(ch){
+  if(isCustomId(ch)) return (customSongsCache[ch] ? customSongsCache[ch].lines.length : 0);
+  return REV_DATA[String(ch)].length;
+}
+function verseText(ch,i){
+  if(isCustomId(ch)) return (customSongsCache[ch] ? customSongsCache[ch].lines[i] : "");
+  return REV_DATA[String(ch)][i];
+}
 
 /* chapter titles - shown instead of the verse count next to the chapter
    number ("1장 계시록 전장의 요약과 결론" instead of "1장 (20절)") */
@@ -127,7 +135,7 @@ let dbPromise = null;
 function openDB(){
   if(dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject)=>{
-    const req = indexedDB.open("RevSongsDB", 2);
+    const req = indexedDB.open("RevSongsDB", 3);
     req.onupgradeneeded = ()=>{
       const db = req.result;
       if(!db.objectStoreNames.contains("altClips")){
@@ -138,6 +146,13 @@ function openDB(){
         // one row per chapter - a user-uploaded replacement for that
         // chapter's whole original song (not the per-verse alt clips)
         db.createObjectStore("chapterAudio", {keyPath:"chapter"});
+      }
+      if(!db.objectStoreNames.contains("customSongs")){
+        // songs registered under the "기타" tab - not one of the 22
+        // Revelation chapters. Each row is a whole song: title, its lyrics
+        // split into lines (played back the same way verses are), and the
+        // uploaded audio file itself.
+        db.createObjectStore("customSongs", {keyPath:"id"});
       }
     };
     req.onsuccess = ()=>resolve(req.result);
@@ -232,8 +247,53 @@ async function deleteChapterAudioOverride(chapter){
   });
 }
 
+/* ---------------- 기타 탭: 등록형 곡(제목+가사+오디오) ---------------- */
+async function addCustomSong(title, lines, blob, audioName){
+  const db = await dbWithTimeout();
+  if(!db) throw new Error("저장 공간을 열 수 없어요. 이 앱을 다른 탭에서도 열어두셨다면 그 탭을 닫고 다시 시도해주세요.");
+  const id = "c"+Date.now()+Math.floor(Math.random()*1000);
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("customSongs","readwrite");
+    tx.objectStore("customSongs").put({id, title, lines, audioBlob:blob, audioName, createdAt:Date.now()});
+    tx.oncomplete = ()=>resolve(id);
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function getAllCustomSongs(){
+  const db = await dbWithTimeout();
+  if(!db) return [];
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("customSongs","readonly");
+    const req = tx.objectStore("customSongs").getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function getCustomSong(id){
+  const db = await dbWithTimeout();
+  if(!db) return null;
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("customSongs","readonly");
+    const req = tx.objectStore("customSongs").get(id);
+    req.onsuccess = ()=>resolve(req.result || null);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function deleteCustomSong(id){
+  const db = await dbWithTimeout();
+  if(!db) throw new Error("삭제하지 못했어요. 이 앱을 다른 탭에서도 열어두셨다면 그 탭을 닫고 다시 시도해주세요.");
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction("customSongs","readwrite");
+    tx.objectStore("customSongs").delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+
 /* ---------------- state ---------------- */
 let currentChapter = 1;
+let lastRevChapter = 1; // remembers where we were in 계시록 mode when switching to 기타 and back
+let appMode = "rev"; // "rev" | "customList" | "customPlayer"
 let chapterAltClips = []; // cached alt clips for currentChapter
 const objectUrls = []; // track for revocation
 function clearObjectUrls(){
@@ -249,6 +309,28 @@ const missingMsg = qs("#missingMsg");
 const markCountEl = qs("#markCount");
 const verseListEl = qs("#verseList");
 const playAllHint = qs("#playAllHint");
+
+/* ---------------- 계시록 / 기타 탭 ---------------- */
+const tabRevBtn = qs("#tabRevBtn");
+const tabCustomBtn = qs("#tabCustomBtn");
+const chapterCardEl = qs("#chapterCard");
+const footerCardEl = qs("#footerCard");
+const customListSectionEl = qs("#customListSection");
+const customSongListEl = qs("#customSongListEl");
+const customAddFormEl = qs("#customAddForm");
+const customPlayerBarEl = qs("#customPlayerBar");
+const addCustomSongBtn = qs("#addCustomSongBtn");
+const customTitleInput = qs("#customTitleInput");
+const customLyricsInput = qs("#customLyricsInput");
+const customAudioInput = qs("#customAudioInput");
+const customSaveBtn = qs("#customSaveBtn");
+const customCancelBtn = qs("#customCancelBtn");
+const customBackBtn = qs("#customBackBtn");
+const customExportBtn = qs("#customExportBtn");
+const customDeleteBtn = qs("#customDeleteBtn");
+const prevBtnEl = qs("#prevBtn");
+const nextBtnEl = qs("#nextBtn");
+const playerCardEl = qs("#playerCard");
 
 /* ---------------- 글꼴 크기(가/가) ---------------- */
 const LS_FONT_SIZE = "revsongs_font_size_v1";
@@ -476,6 +558,7 @@ function updateChapterGridActive(){
 async function setChapter(ch, opts){
   const autoplay = !!(opts && opts.autoplay);
   currentChapter = ch;
+  lastRevChapter = ch;
   updateChapterGridActive();
   chapterLabel.textContent = chapterDisplayLabel(ch);
   chapterTitleRow.textContent = chapterTitle(ch);
@@ -584,6 +667,15 @@ playAllBtn.addEventListener("click", ()=>{
 });
 mainAudio.addEventListener("ended", ()=>{
   if(!playAllMode) return;
+  if(isCustomId(currentChapter)){
+    // "전체 듣기" is a rev-chapters-only concept (playAllBtn is hidden in
+    // 기타 mode anyway) - bail out defensively rather than letting
+    // CHAPTERS.indexOf() return -1 and misfire into chapter 1.
+    playAllMode = false;
+    playAllBtn.classList.remove("on");
+    playAllBtn.textContent = "전체 듣기";
+    return;
+  }
   const idx = CHAPTERS.indexOf(currentChapter);
   if(idx < CHAPTERS.length-1){
     setChapter(CHAPTERS[idx+1], {autoplay:true});
@@ -1085,7 +1177,6 @@ guidedBtn.addEventListener("click", ()=>{
    isn't constant (loop status/hints can appear, chapter titles can wrap
    to two lines, etc). ResizeObserver keeps it in sync automatically
    instead of hardcoding a height that would drift out of date. */
-const playerCardEl = qs("#playerCard");
 function syncGuidedPanelStickyTop(){
   guidedPanel.style.top = (playerCardEl.offsetHeight + 70) + "px";
 }
@@ -1139,6 +1230,174 @@ guidedUndoBtn.addEventListener("click", ()=>{
   renderVerseList();
   updateMarkCount();
   renderGuidedPanel();
+});
+
+/* ---------------- 기타 탭 모드 전환 ---------------- */
+function updateModeVisibility(){
+  const inRev = appMode==="rev";
+  const inCustomList = appMode==="customList";
+  const inCustomPlayer = appMode==="customPlayer";
+  tabRevBtn.classList.toggle("on", inRev);
+  tabCustomBtn.classList.toggle("on", !inRev);
+  chapterCardEl.hidden = !inRev;
+  customListSectionEl.hidden = !inCustomList;
+  customAddFormEl.hidden = true; // any mode switch closes the add-song form
+  playerCardEl.hidden = inCustomList;
+  verseListEl.hidden = inCustomList;
+  footerCardEl.hidden = !inRev;
+  customPlayerBarEl.hidden = !inCustomPlayer;
+  prevBtnEl.hidden = !inRev;
+  nextBtnEl.hidden = !inRev;
+  if(!inCustomPlayer){ guidedPanel.hidden = true; }
+}
+function showRevMode(){
+  appMode = "rev";
+  updateModeVisibility();
+  // currentChapter only ever gets reassigned to a string (custom id) while
+  // in customPlayer mode - if that's what it's still holding, the player
+  // needs a real chapter reloaded into it before it's usable again.
+  if(isCustomId(currentChapter)){
+    setChapter(lastRevChapter || 1);
+  }
+}
+function showCustomListMode(){
+  appMode = "customList";
+  updateModeVisibility();
+  renderCustomSongList();
+}
+tabRevBtn.addEventListener("click", ()=>{ if(appMode!=="rev") showRevMode(); });
+tabCustomBtn.addEventListener("click", ()=>{ if(appMode==="rev" || appMode==="customPlayer") showCustomListMode(); });
+
+async function renderCustomSongList(){
+  customSongListEl.innerHTML = "";
+  let songs = [];
+  try{ songs = await getAllCustomSongs(); }
+  catch(err){ /* fall through to empty state below */ }
+  if(songs.length===0){
+    customSongListEl.appendChild(el("p",{class:"small-note"}, "아직 등록된 곡이 없어요. 위 버튼으로 추가해보세요."));
+    return;
+  }
+  songs.sort((a,b)=> b.createdAt-a.createdAt);
+  songs.forEach(song=>{
+    customSongsCache[song.id] = song;
+    const openBtn = el("button",{class:"custom-song-row", type:"button"}, [
+      el("div",{class:"custom-song-title"}, song.title),
+      el("div",{class:"small-note"}, song.lines.length+"줄")
+    ]);
+    openBtn.addEventListener("click", ()=> openCustomSong(song.id));
+
+    const delBtn = el("button",{class:"custom-song-delete", type:"button", title:"삭제", "aria-label":song.title+" 삭제"}, "✕");
+    delBtn.addEventListener("click", async (e)=>{
+      e.stopPropagation();
+      if(!confirm("\""+song.title+"\" 곡을 삭제할까요? 되돌릴 수 없어요.")) return;
+      try{
+        await deleteCustomSong(song.id);
+        delete customSongsCache[song.id];
+        renderCustomSongList();
+      }catch(err){
+        alert(err.message || "삭제하지 못했어요.");
+      }
+    });
+
+    const wrap = el("div",{class:"custom-song-row-wrap"}, [openBtn, delBtn]);
+    customSongListEl.appendChild(wrap);
+  });
+}
+
+addCustomSongBtn.addEventListener("click", ()=>{
+  customListSectionEl.hidden = true;
+  customAddFormEl.hidden = false;
+  customTitleInput.value = "";
+  customLyricsInput.value = "";
+  customAudioInput.value = "";
+});
+customCancelBtn.addEventListener("click", ()=>{
+  customAddFormEl.hidden = true;
+  customListSectionEl.hidden = false;
+});
+customSaveBtn.addEventListener("click", async ()=>{
+  const title = customTitleInput.value.trim();
+  const lines = customLyricsInput.value.split("\n").map(s=>s.trim()).filter(s=>s.length>0);
+  const file = customAudioInput.files[0];
+  if(!title){ alert("제목을 입력해주세요."); return; }
+  if(lines.length===0){ alert("가사를 한 줄 이상 입력해주세요."); return; }
+  if(!file){ alert("노래 파일을 선택해주세요."); return; }
+  customSaveBtn.disabled = true;
+  try{
+    const id = await addCustomSong(title, lines, file, file.name);
+    customAddFormEl.hidden = true;
+    await openCustomSong(id);
+  }catch(err){
+    alert(err.message || "등록하지 못했어요.");
+  }finally{
+    customSaveBtn.disabled = false;
+  }
+});
+
+async function openCustomSong(id){
+  const song = customSongsCache[id] && customSongsCache[id].audioBlob ? customSongsCache[id] : await getCustomSong(id);
+  if(!song){ alert("곡을 찾을 수 없어요."); return; }
+  customSongsCache[id] = song;
+
+  appMode = "customPlayer";
+  updateModeVisibility();
+  currentChapter = id;
+
+  chapterLabel.textContent = song.title;
+  chapterTitleRow.textContent = "";
+  missingMsg.hidden = true;
+  guidedMode = false;
+  guidedBtn.classList.remove("on");
+  guidedPanel.hidden = true;
+  stopLoop();
+  chapterLoopMode = false;
+  chapterLoopBtn.classList.remove("on");
+  chapterLoopBtn.textContent = "이 노래만 듣기";
+  mainAudio.loop = false;
+  lastPlayedVerseIndex = null;
+  playPauseBtn.disabled = false;
+  updatePlayPauseIcon();
+  curTimeLabel.textContent = "0:00";
+  durTimeLabel.textContent = "0:00";
+  seekRange.value = 0;
+
+  if(chapterAudioObjectUrl){ URL.revokeObjectURL(chapterAudioObjectUrl); chapterAudioObjectUrl = null; }
+  chapterAudioObjectUrl = URL.createObjectURL(song.audioBlob);
+  mainAudio.src = chapterAudioObjectUrl;
+  mainAudio.onerror = ()=>{ missingMsg.hidden = false; playPauseBtn.disabled = true; };
+  applyPlaybackRate();
+  chapterAudioStatus.hidden = true;
+  chapterAudioRevertBtn.hidden = true;
+
+  chapterAltClips = await getAltClipsForChapter(id).catch(()=>[]);
+  renderVerseList();
+  updateMarkCount();
+}
+
+customBackBtn.addEventListener("click", ()=> showCustomListMode());
+customExportBtn.addEventListener("click", ()=>{
+  const song = customSongsCache[currentChapter];
+  if(!song) return;
+  const payload = {title:song.title, lines:song.lines, timestamps:loadChapterTs(currentChapter)};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const safeName = song.title.replace(/[^\w\u3131-\uD79D]+/g,"_") || "노래";
+  const a = el("a",{href:url, download:"revsongs_custom_"+safeName+".json"});
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  alert("가사·구간 표시가 담긴 파일을 받았어요. 원래 노래 파일(mp3)도 같이 클로드에게 보내주시면 사이트에 반영해드릴 수 있어요.");
+});
+customDeleteBtn.addEventListener("click", async ()=>{
+  const song = customSongsCache[currentChapter];
+  if(!song) return;
+  if(!confirm("\""+song.title+"\" 곡을 삭제할까요? 되돌릴 수 없어요.")) return;
+  try{
+    await deleteCustomSong(currentChapter);
+    delete customSongsCache[currentChapter];
+    showCustomListMode();
+  }catch(err){
+    alert(err.message || "삭제하지 못했어요.");
+  }
 });
 
 /* ---------------- init ---------------- */
