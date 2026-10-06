@@ -1178,7 +1178,9 @@ guidedBtn.addEventListener("click", ()=>{
    to two lines, etc). ResizeObserver keeps it in sync automatically
    instead of hardcoding a height that would drift out of date. */
 function syncGuidedPanelStickyTop(){
-  guidedPanel.style.top = (playerCardEl.offsetHeight + 70) + "px";
+  // card's sticky "top" differs per screen size (see CSS media query), so read it instead of hardcoding 70
+  const cardTop = parseFloat(getComputedStyle(playerCardEl).top);
+  guidedPanel.style.top = (playerCardEl.offsetHeight + (isNaN(cardTop) ? 70 : cardTop)) + "px";
 }
 if(window.ResizeObserver){
   new ResizeObserver(syncGuidedPanelStickyTop).observe(playerCardEl);
