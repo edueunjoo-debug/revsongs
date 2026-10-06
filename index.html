@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="새노래 듣기">
 <meta name="theme-color" content="#f4f5f6">
-<link rel="stylesheet" href="css/style.css?v=20260830z6">
+<link rel="stylesheet" href="css/style.css?v=20260830z7">
 </head>
 <body>
 
@@ -70,6 +70,7 @@
       <button class="btn ghost small" id="prevBtn">◀</button>
       <span id="chapterLabel" class="chapter-label"></span>
       <button class="btn ghost small" id="nextBtn">▶</button>
+      <button class="btn ghost small" id="moreToggleBtn" title="메뉴 펼치기/접기" aria-label="메뉴 펼치기/접기" aria-expanded="false">⋯</button>
       <span class="font-size-ctrl">
         <button class="btn ghost small font-size-btn" id="fontSmallBtn" style="font-size:0.75rem;" title="글꼴 작게" aria-label="글꼴 작게">가</button>
         <button class="btn ghost small font-size-btn" id="fontLargeBtn" style="font-size:1.125rem;" title="글꼴 크게" aria-label="글꼴 크게">가</button>
@@ -90,7 +91,7 @@
         </div>
       </div>
     </div>
-    <div class="row control-row">
+    <div class="row control-row main-controls">
       <button class="btn ghost small" id="seekBackBtn">◀5초</button>
       <button class="btn ghost small" id="seekFwdBtn">5초▶</button>
       <span class="speed-ctrl">
@@ -152,8 +153,19 @@
 
 </main>
 
-<script src="js/data.js?v=20260830z6"></script>
-<script src="js/verse-times.js?v=20260830z6"></script>
-<script src="js/app.js?v=20260830z6"></script>
+<script src="js/data.js?v=20260830z7"></script>
+<script src="js/verse-times.js?v=20260830z7"></script>
+<script src="js/app.js?v=20260830z7"></script>
+<script>
+(function(){
+  var b=document.getElementById('moreToggleBtn'), c=document.getElementById('playerCard');
+  if(!b||!c) return;
+  b.addEventListener('click', function(){
+    var on=c.classList.toggle('expanded');
+    b.setAttribute('aria-expanded', on?'true':'false');
+    b.textContent = on ? '▴' : '⋯';
+  });
+})();
+</script>
 </body>
 </html>
