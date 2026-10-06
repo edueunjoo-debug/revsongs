@@ -432,3 +432,38 @@ body.font-large .verse-row.current .vtext{ font-size:1.5rem; }
 }
 
 .empty-alt{ font-size:0.8125rem; color:var(--ink-soft); }
+
+/* ===== 모바일: 위쪽 플레이어를 얇게 (가사 영역 확보) ===== */
+#moreToggleBtn{ display:none; }
+@media (max-width:640px){
+  /* 헤더는 스크롤하면 사라지게 -> 위쪽 고정 영역은 플레이어 카드만 */
+  header.top{ position:static; padding:10px 16px; }
+  header.top h1{ font-size:1.1rem; }
+  main{ padding-top:12px; }
+
+  .player-card{ top:6px; padding:8px 12px 10px; margin-bottom:12px; border-radius:14px; }
+  .guided-panel{ top:120px; }
+
+  .player-head{ gap:6px; margin-bottom:2px; }
+  .player-head button.btn.small{ padding:4px 10px; min-height:32px; }
+  .chapter-label{ font-size:1.05rem; min-width:48px; }
+  #moreToggleBtn{ display:inline-block; font-size:1rem; line-height:1; }
+  .font-size-ctrl{ margin-left:0; gap:4px; }
+
+  .chapter-title-row{
+    font-size:0.8125rem; margin-bottom:6px; padding:0 4px; line-height:1.3;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  .play-toggle{ width:40px; height:40px; min-width:40px; }
+  .play-toggle svg{ width:20px; height:20px; }
+  .time-row{ margin-top:1px; }
+
+  .loop-status{ margin-top:6px; padding:5px 10px; }
+  .hint{ margin-top:6px; padding:5px 8px; font-size:0.75rem; }
+
+  /* 접힌 상태: 장 이동 + 재생 + 진행바만. ⋯ 를 누르면 전체 메뉴 */
+  .player-card:not(.expanded) .main-controls,
+  .player-card:not(.expanded) #adminControlsRow{ display:none; }
+}
+
